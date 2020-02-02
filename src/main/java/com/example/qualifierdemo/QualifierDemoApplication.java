@@ -9,6 +9,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.io.OptionalDataException;
+import java.io.PrintStream;
+import java.util.Optional;
+
 interface Printer {
 	void print(String a);
 }
@@ -27,7 +32,6 @@ class LowerCasePrinter implements Printer {
 @Component
 class UpperCasePrinter implements Printer {
 
-
 	@Override
 	public void print(String a) {
 		System.out.println(a.toUpperCase());
@@ -37,19 +41,20 @@ class UpperCasePrinter implements Printer {
 @SpringBootApplication
 public class QualifierDemoApplication {
 
-	@Autowired
-	@Qualifier("upper")
-	Printer printer;
+	Optional<Printer> printer;
+
+	public QualifierDemoApplication(@Autowired @Qualifier("lower") Optional<Printer> printer) {
+		this.printer = printer;
+	}
 
 	public static void main(String[] args) {
 		final ConfigurableApplicationContext context = SpringApplication.run(QualifierDemoApplication.class, args);
-
 	}
 
 	@Bean
 	InitializingBean run () {
 		return () -> {
-			printer.print("HELLO world");
+			printer.ifPresent(p -> p.print("HELLO world"));
 		};
 	}
 
